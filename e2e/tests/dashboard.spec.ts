@@ -73,7 +73,7 @@ test.describe('Dashboard suite', () => {
     });
 });
 
-test.describe.only('PIM Page test', () => {
+test.describe('PIM Page test', () => {
     test.beforeAll(async ({ browser }) => {
         context = await browser.newContext();
         page = await context.newPage();
