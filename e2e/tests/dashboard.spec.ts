@@ -129,7 +129,7 @@ test.describe('PIM Page test', () => {
         //6.6 verifică valoarea
         await expect(employeeIdField).toHaveValue(`${randomId}`);
         console.log(`Employee ID folosit în test: ${randomId}`);
-
+ //
         // 7. Click Save
         await page.click('button:has-text("Save")');
 
