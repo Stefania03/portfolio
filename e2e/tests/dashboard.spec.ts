@@ -135,4 +135,78 @@ test.describe('PIM Page test', () => {
 
     });
 });
+test.describe('Admin Page test', () => {
+    test.beforeAll(async ({ browser }) => {
+        context = await browser.newContext();
+        page = await context.newPage();
+        login = new Login(page);
+        leftPannel = new LeftPannel(page);
 
+        await login.goTo();
+        await login.loginWithValidCredentials();
+    });
+
+
+    test('Deschide Admin și dă click pe Add', async () => {
+        await page.locator('aside a.oxd-main-menu-item[href*="/admin"]').click();
+        await page.waitForURL(/\/admin\/viewSystemUsers/i, { timeout: 15000 });
+        await page.locator('button:has(.oxd-icon.bi-plus.oxd-button-icon)').click();
+    })
+    test('Selectează User Role = Admin și Status = Enabled', async () => {
+        await page.waitForURL(/\/admin\/saveSystemUser/i, { timeout: 15000 });
+        const addForm = page.locator('form').first();
+
+        const userRole = addForm.locator('.oxd-select-text').nth(0);
+        await userRole.click();
+        await page.locator('.oxd-select-dropdown .oxd-select-option:has-text("Admin")').click();
+        await expect(userRole.locator('.oxd-select-text-input')).toHaveText(/Admin/i, { timeout: 10000 });
+
+        const status = addForm.locator('.oxd-select-text').nth(1);
+        await status.click();
+        await page.locator('.oxd-select-dropdown .oxd-select-option:has-text("Enabled")').click();
+        await expect(status.locator('.oxd-select-text-input')).toHaveText(/Enabled/i, { timeout: 10000 });
+    });
+
+    test('Selectează Employee Name din dropdown și setează Username random', async () => {
+        await page.waitForURL(/\/admin\/saveSystemUser/i, { timeout: 15000 });
+        const addForm = page.locator('form').first();
+
+        const empNameInput = addForm.locator('.oxd-autocomplete-wrapper input');
+        await empNameInput.click();
+        let options = page.locator('.oxd-autocomplete-dropdown .oxd-autocomplete-option');
+        if (await options.count() === 0) {
+            await empNameInput.type('a');
+            await options.first().waitFor({ state: 'visible', timeout: 10000 });
+        }
+        await options.first().click();
+        await expect(empNameInput).toHaveValue(/.+/, { timeout: 10000 });
+
+        const letters = 'abcdefghijklmnopqrstuvwxyz';
+        const rand = (n = 10) => Array.from({ length: n }, () => letters[Math.floor(Math.random() * letters.length)]).join('');
+        const usernameInput = addForm.locator('//label[normalize-space()="Username"]/ancestor::div[contains(@class,"oxd-input-group")]//input');
+        const username = rand(10);
+        await usernameInput.fill(username);
+        await expect(usernameInput).toHaveValue(username, { timeout: 10000 });
+    });
+
+
+    test('Setează Password și Confirm Password (puternică)', async () => {
+        await page.waitForURL(/\/admin\/saveSystemUser/i, { timeout: 15000 });
+        const addForm = page.locator('form').first();
+        const pwd = 'Str0ng!Pass#2025';
+        const passInputs = addForm.locator('input[type="password"]');
+        await passInputs.nth(0).fill(pwd);
+        await passInputs.nth(1).fill(pwd);
+        await expect(passInputs.nth(0)).toHaveValue(pwd, { timeout: 10000 });
+        await expect(passInputs.nth(1)).toHaveValue(pwd, { timeout: 10000 });
+    });
+    test('Click Save button', async () => {
+        await page.waitForURL(/\/admin\/saveSystemUser/i, { timeout: 15000 });
+        const saveBtn = page.locator('form button[type="submit"]');
+        await expect(saveBtn).toBeVisible({ timeout: 10000 });
+        await expect(saveBtn).toBeEnabled({ timeout: 10000 });
+        await saveBtn.click();
+    });
+
+
+});
