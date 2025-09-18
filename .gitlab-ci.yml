@@ -1,36 +1,17 @@
 stages:
+  - build
   - test
 
-playwright-tests:
-  stage: test
-  image: mcr.microsoft.com/playwright:v1.45.0-jammy
-  variables:
-    PLAYWRIGHT_JUNIT_OUTPUT: "test-results/junit.xml"
-  cache:
-    key:
-      files:
-        - package-lock.json
-    paths:
-      - node_modules/
-      - .cache/ms-playwright/
-  before_script:
-    # Instalează dependințele proiectului
-    - npm ci
-    # Instalează browserele necesare pentru Playwright
-    - npx playwright install --with-deps
+build:
+  stage: build
   script:
-    # Rulează testele Playwright
-    - npx playwright test
-      --reporter=dot,junit
-      --output=test-results
-  artifacts:
-    when: always
-    expire_in: 1 week
-    paths:
-      - playwright-report/
-      - test-results/
-    reports:
-      junit: test-results/junit.xml
-  rules:
-    - if: $CI_COMMIT_BRANCH # rulează pe orice branch
-    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - echo "Compiling the code..."
+    - echo "Compile complete"
+
+test:
+  image: mcr.microsoft.com/playwright
+  stage: test
+  script:
+      - npm ci
+      - npx playwright install --with-deps
+      - npm run test
